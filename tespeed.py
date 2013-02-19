@@ -59,7 +59,7 @@ class CallbackStringIO(StringIO):
 
 class TeSpeed:
 
-    def __init__(self, server = "", numTop = 0, servercount = 3, store = False, suppress = False, unit = False):
+    def __init__(self, server = "", numTop = 0, servercount = 3, store = False, suppress = False, unit = False, duration = 5, iterations = 0):
 
         self.headers = {
             'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -90,6 +90,12 @@ class TeSpeed:
 
         self.store=store
         self.suppress=suppress
+
+        self.duration = int(duration)
+        self.iterations = int(iterations)
+
+        print_debug("self.duration = %d, self.iterations = %d\n" % (self.duration, self.iterations))
+
         if store:
             print_debug("Printing CSV formated results to STDOUT.\n")
         self.numTop=int(numTop)
@@ -460,6 +466,11 @@ class TeSpeed:
         sizes, took=[0,0]
         data=""
         for i in range(0, len(self.upSizes)):
+
+            if self.iterations>0 and i>=self.iterations:
+                #already run enough iterations
+                break
+
             if len(data) == 0 or self.upSizes[i] != self.upSizes[i-1]:
                 #print_debug("Generating new string to upload. Length: %d\n" % (self.upSizes[i]))
                 data=''.join("1" for x in xrange(self.upSizes[i]))
@@ -497,7 +508,8 @@ class TeSpeed:
             if self.up_speed<speed:
                 self.up_speed=speed
 
-            if took>5:
+            print_debug("Upload: i = %d, self.iterations = %d\n" % (i, self.iterations))
+            if took>self.duration:
                 break
                 
         #print_debug("Upload size: %0.2f MiB; Uploaded in %0.2f s\n" % (self.SpeedConversion(sizes), took))
@@ -514,6 +526,11 @@ class TeSpeed:
     # Testing download speed
         sizes, took=[0,0]
         for i in range(0, len(self.downList)):
+
+            if self.iterations>0 and i>=self.iterations:
+                #already run enough iterations
+                break
+        
             url="random"+self.downList[i]+".jpg?x=" + str( time.time() ) + "&y=3"
             
             
@@ -545,11 +562,12 @@ class TeSpeed:
                 (size, took))
             print_debug("\033[91mDownload speed: %0.2f %s/s\033[0m\n" % 
                 (speed, self.units))
+            print_debug("Download: i = %d, self.iterations = %d\n" % (i, self.iterations))
 
             if self.down_speed<speed:
                 self.down_speed=speed
 
-            if took>5:
+            if took>self.duration:
                 break
 
         #print_debug("Download size: %0.2f MiB; Downloaded in %0.2f s\n" % (self.SpeedConversion(sizes), took))
@@ -567,6 +585,9 @@ class TeSpeed:
             self.config=self.LoadConfig()
             self.server_list=self.LoadServers()
             self.FindBestServer()
+        else:
+            for i in self.num_servers:
+                self.servers.append(self.server)
 
         self.TestDownload()
         self.TestUpload()
@@ -601,7 +622,7 @@ def main(args):
     else:
         print_debug("Getting ready\n")
     try:
-        t=TeSpeed(args.listservers and 'list-servers' or args.server, args.listservers, args.servercount, args.store and True or False, args.suppress and True or False, args.unit and True or False)
+        t=TeSpeed(args.listservers and 'list-servers' or args.server, args.listservers, args.servercount, args.store and True or False, args.suppress and True or False, args.unit and True or False, args.duration, args.iterations)
     except (KeyboardInterrupt, SystemExit):
         print_debug("\nTesting stopped.\n")
         #raise
@@ -615,6 +636,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--suppress', dest='suppress', action='store_const', const=True, help='Suppress debugging (STDERR) output.')
     parser.add_argument('-mib', '--mebibit', dest='unit', action='store_const', const=True, help='Show results in mebibits.')
     parser.add_argument('-n', '--server-count', dest='servercount', nargs='?', default=1, const=1, help='Specify how many different servers should be used in paralel. (Defaults to 1.) (Increase it for >100Mbit testing.)')
-
+    parser.add_argument('-i', '--iterations', dest='iterations', nargs='?', default=0, const=0, help='Specify how many iterations to try before moving on to avoid infinitely testing if maximum duration is not exceeded')
+    parser.add_argument('-d', '--duration', dest='duration', nargs='?', default=5, const=5, help='Specify the maximum duration to consider before moving on (Defaults to 5 seconds). (Lower may be better to avoid running for toolong on higher bandwidth links).')
     args = parser.parse_args()
     main(args)
