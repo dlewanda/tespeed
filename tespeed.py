@@ -586,15 +586,16 @@ class TeSpeed:
             self.server_list=self.LoadServers()
             self.FindBestServer()
         else:
-            for i in self.num_servers:
-                self.servers.append(self.server)
+            if self.num_servers>1:
+                for i in self.num_servers:
+                    self.servers.append(self.server)
 
         self.TestDownload()
         self.TestUpload()
 
         print_result("%0.2f,%0.2f,\"%s\",\"%s\"\n" % (self.down_speed, self.up_speed, self.units, self.servers))
 
-    def ListServers(self, num=0):
+    def ListServers(self, num0):
         
         allSorted=self.Closest([self.config['lat'], self.config['lon']], self.server_list, num)
 
