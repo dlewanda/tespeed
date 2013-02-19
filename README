@@ -1,6 +1,7 @@
 
 Tespeed (terminal speedtest) - Copyright 2012 Janis Jansons (janis.jansons@janhouse.lv)
 
+	This fork adds some additional command line options for finer-grained control of command-line speed testing.
 
     This is a new Tespeed version written in Python (for the purpose of learning it).
 
@@ -49,7 +50,13 @@ Usage:
                             Specify how many different servers should be used in
                             paralel. (Defaults to 1.) (Increase it for >100Mbit
                             testing.)
-
+      -r, --server          Specify which server to use for testing
+      -t, --time	    Specify the maximum interval to consider before moving
+      	  		    on (Defaults to 5 seconds). (Lower may be better to
+			    avoid running for too long on higher bandwidth links).
+      -i, --iterations      Specify how many iterations to try before moving on
+      	  		    as a secondary limiter in addition to the time test
+			    
 
 What the script does:
 
