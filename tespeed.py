@@ -44,11 +44,11 @@ class CallbackStringIO(StringIO):
         if self.num==0:
             percent = float(down) / (self.total)
             percent = round(percent*100, 2)
-            self.print_debug("Uploaded %d of %d bytes (%0.2f%%) in %d threads\r" %
+            TeSpeed.print_debug("Uploaded %d of %d bytes (%0.2f%%) in %d threads\r" %
                (down, self.total, percent, self.th))
 
         #if down >= self.total:
-        #    self.print_debug('\n')
+        #    TeSpeed.print_debug('\n')
         #    self.d['done']=1
 
         return next
